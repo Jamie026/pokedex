@@ -62,6 +62,9 @@ io.on("connection", (socket) => {
         battle.players[socket.id] = { username, activePokemonId: initialPokemonId };
         battle.readyCheck++;
 
+        console.log(`Jugador ${username} está listo en la batalla ${battleId}.`);
+        console.log(socket.id + " se ha unido a la batalla " + battleId);
+
         if (battle.readyCheck === 2) {
             const [player1SocketId, player2SocketId] = Object.keys(battle.players);
             const player1 = battle.players[player1SocketId];
