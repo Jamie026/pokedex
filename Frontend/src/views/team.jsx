@@ -3,7 +3,6 @@ import axios from "../utils/axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../components/Navbar";
-import { GreeButton, OrangeButton, RedButton, SkyButton } from "../components/Buttons";
 
 function Team() {
     const token = localStorage.getItem("token");
@@ -163,118 +162,79 @@ function Team() {
     }, [page, searchName]);
 
     return (
-        <div className="home-container">
+        <>
             <Navbar />
-            <ToastContainer position="top-center" autoClose={3000} />
+            <div className="home-container">
+                <ToastContainer position="top-center" autoClose={3000} />
 
-            <div className="container py-4 mt-5">
-                <h1 className="text-center my-4 fw-bold text-warning">Mi Equipo</h1>
+                <div className="container py-4 mt-5">
+                    <h1 className="text-center my-4 fw-bold">Mi Equipo</h1>
 
-                <div className="mb-5">
-                    {team.length === 0 ? (
-                        <div className="text-center p-4 border border-warning rounded shadow-sm text-light">
-                            <p className="mb-0">Aún no tienes ningún Pokémon en tu equipo.</p>
-                        </div>
-                    ) : (
-                        <div className="row g-4">
-                            {team.map((id) => {
-                                const pokemonData =
-                                    searchResult?.id === id
-                                        ? searchResult
-                                        : pokemonList.find((p) => p.id === id);
-                                return (
-                                    <div key={id} className="col-6 col-md-4 col-lg-2">
-                                        <div
-                                            className="card h-100 text-center border border-warning"
-                                            style={{ background: "linear-gradient(145deg, #222, #333)" }}
-                                        >
-                                            <img
-                                                src={"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png"}
-                                                className="card-img-top p-3"
-                                                alt={"Pokemon " + id}
-                                            />
-                                            <div className="card-body d-flex flex-column justify-content-center align-items-center">
-                                                <SkyButton onClick={() => openMovesModal(id, pokemonData?.name || "")}>
-                                                    👊 Movimientos
-                                                </SkyButton>
-
-                                                <RedButton onClick={() => removeFromTeam(id)} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-
-                <h2 className="mb-3 text-warning">Pokédex</h2>
-
-                <div className="mb-4 d-flex gap-2">
-                    <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Buscar Pokémon por nombre"
-                        value={searchName}
-                        onChange={(e) => setSearchName(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") handleSearch();
-                        }}
-                    />
-                    <button
-                        className="btn btn-warning fw-bold"
-                        onClick={handleSearch}
-                        disabled={searchLoading}
-                    >
-                        {searchLoading ? "Buscando..." : "Buscar"}
-                    </button>
-                </div>
-
-                {loading && !searchName ? (
-                    <p className="text-center text-light">Cargando...</p>
-                ) : (
-                    <div className="row g-4">
-                        {searchName && searchResult ? (
-                            <div key={searchResult.id} className="col-6 col-md-4 col-lg-3">
-                                <div
-                                    className="card h-100 text-center border border-danger rounded shadow-lg"
-                                    style={{
-                                        background: "rgba(255, 255, 255, 0.08)",
-                                        backdropFilter: "blur(12px) saturate(180%)",
-                                        borderColor: "rgba(255,255,255,0.25)",
-                                    }}
-                                >
-                                    <img
-                                        src={searchResult.sprites.front_default}
-                                        className="card-img-top p-3"
-                                        alt={searchResult.name}
-                                    />
-                                    <div className="card-body">
-                                        <h5 className="card-title text-light text-capitalize">{searchResult.name}</h5>
-                                        <div className="mb-2">
-                                            {searchResult.types.map((t) => (
-                                                <span
-                                                    key={t.type.name}
-                                                    className="badge bg-warning text-dark mx-1 px-2 py-2"
-                                                    style={{ textTransform: "uppercase" }}
-                                                >
-                                                    {t.type.name.toUpperCase()}
-                                                </span>
-                                            ))}
-                                        </div>
-                                        <GreeButton onClick={() => addToTeam(searchResult.id)}>
-                                            ➕ Agregar a equipo
-                                        </GreeButton>
-                                        <br />
-                                        <OrangeButton onClick={() => playCry(searchResult.cries?.latest)}>
-                                            🔊 Grito
-                                        </OrangeButton>
-                                    </div>
-                                </div>
+                    <div className="mb-5">
+                        {team.length === 0 ? (
+                            <div className="text-center p-4 border border-warning rounded shadow-sm">
+                                <p className="mb-0">Aún no tienes ningún Pokémon en tu equipo.</p>
                             </div>
                         ) : (
-                            pokemonList.map((p) => (
-                                <div key={p.id} className="col-6 col-md-4 col-lg-3">
+                            <div className="row g-4">
+                                {team.map((id) => {
+                                    const pokemonData =
+                                        searchResult?.id === id
+                                            ? searchResult
+                                            : pokemonList.find((p) => p.id === id);
+                                    return (
+                                        <div key={id} className="col-6 col-md-4 col-lg-2">
+                                            <div className="card h-100 text-center border border-warning">
+                                                <img
+                                                    src={"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/" + id + ".png"}
+                                                    className="card-img-top p-3"
+                                                    alt={"Pokemon " + id}
+                                                />
+                                                <div className="card-body d-flex flex-column justify-content-center align-items-center">
+                                                    <button className="btn btn-info w-100 my-2" onClick={() => openMovesModal(id, pokemonData?.name || "")}>
+                                                        Movimientos
+                                                    </button>
+
+                                                    <button className="btn btn-danger w-100 my-2" onClick={() => removeFromTeam(id)}>
+                                                        Eliminar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    <h2 className="mb-3">Pokédex</h2>
+
+                    <div className="mb-4 d-flex gap-2">
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Buscar Pokémon por nombre"
+                            value={searchName}
+                            onChange={(e) => setSearchName(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") handleSearch();
+                            }}
+                        />
+                        <button
+                            className="btn btn-warning"
+                            onClick={handleSearch}
+                            disabled={searchLoading}
+                        >
+                            {searchLoading ? "Buscando..." : "Buscar"}
+                        </button>
+                    </div>
+
+                    {loading && !searchName ? (
+                        <p className="text-center text-light">Cargando...</p>
+                    ) : (
+                        <div className="row g-4">
+                            {searchName && searchResult ? (
+                                <div key={searchResult.id} className="col-6 col-md-4 col-lg-3">
                                     <div
                                         className="card h-100 text-center border border-danger rounded shadow-lg"
                                         style={{
@@ -284,14 +244,14 @@ function Team() {
                                         }}
                                     >
                                         <img
-                                            src={p.sprites.front_default}
+                                            src={searchResult.sprites.front_default}
                                             className="card-img-top p-3"
-                                            alt={p.name}
+                                            alt={searchResult.name}
                                         />
                                         <div className="card-body">
-                                            <h5 className="card-title text-light text-capitalize">{p.name}</h5>
+                                            <h5 className="card-title text-light text-capitalize">{searchResult.name}</h5>
                                             <div className="mb-2">
-                                                {p.types.map((t) => (
+                                                {searchResult.types.map((t) => (
                                                     <span
                                                         key={t.type.name}
                                                         className="badge bg-warning text-dark mx-1 px-2 py-2"
@@ -301,113 +261,153 @@ function Team() {
                                                     </span>
                                                 ))}
                                             </div>
-                                            <GreeButton onClick={() => addToTeam(p.id)}>
-                                                ➕ Agregar a equipo
-                                            </GreeButton>
+                                            <button className="btn btn-success w-100 my-2" onClick={() => addToTeam(searchResult.id)}>
+                                                Agregar a equipo
+                                            </button>
                                             <br />
-                                            <OrangeButton onClick={() => playCry(p.cries?.latest)}>
-                                                🔊 Grito
-                                            </OrangeButton>
+                                            <button className="btn btn-primary w-100 my-2" onClick={() => playCry(searchResult.cries?.latest)}>
+                                                Grito
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                            ))
-                        )}
+                            ) : (
+                                pokemonList.map((p) => (
+                                    <div key={p.id} className="col-6 col-md-4 col-lg-3">
+                                        <div
+                                            className="card h-100 text-center border border-danger rounded shadow-lg"
+                                            style={{
+                                                background: "rgba(255, 255, 255, 0.08)",
+                                                backdropFilter: "blur(12px) saturate(180%)",
+                                                borderColor: "rgba(255,255,255,0.25)",
+                                            }}
+                                        >
+                                            <img
+                                                src={p.sprites.front_default}
+                                                className="card-img-top p-3"
+                                                alt={p.name}
+                                            />
+                                            <div className="card-body">
+                                                <h5 className="card-title text-light text-capitalize">{p.name}</h5>
+                                                <div className="mb-2">
+                                                    {p.types.map((t) => (
+                                                        <span
+                                                            key={t.type.name}
+                                                            className="badge bg-warning text-dark mx-1 px-2 py-2"
+                                                            style={{ textTransform: "uppercase" }}
+                                                        >
+                                                            {t.type.name.toUpperCase()}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                <button className="btn btn-success w-100 my-2" onClick={() => addToTeam(p.id)}>
+                                                    Agregar a equipo
+                                                </button>
+                                                <br />
+                                                <button className="btn btn-primary w-100 my-2" onClick={() => playCry(p.cries?.latest)}>
+                                                    Grito
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+
+                    <div className="d-flex justify-content-between mt-4">
+                        <button
+                            className="btn btn-warning fw-bold px-4"
+                            onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+                            disabled={page === 0 || searchName !== ""}
+                        >
+                            Anterior
+                        </button>
+                        <button
+                            className="btn btn-warning fw-bold px-4"
+                            onClick={() => setPage((prev) => prev + 1)}
+                            disabled={searchName !== ""}
+                        >
+                            Siguiente
+                        </button>
                     </div>
-                )}
-
-                <div className="d-flex justify-content-between mt-4">
-                    <button
-                        className="btn btn-warning fw-bold px-4"
-                        onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
-                        disabled={page === 0 || searchName !== ""}
-                    >
-                        Anterior
-                    </button>
-                    <button
-                        className="btn btn-warning fw-bold px-4"
-                        onClick={() => setPage((prev) => prev + 1)}
-                        disabled={searchName !== ""}
-                    >
-                        Siguiente
-                    </button>
                 </div>
-            </div>
 
-            {modalOpen && (
-                <div
-                    className="modal fade show"
-                    style={{
-                        display: "block",
-                        backgroundColor: "rgba(0,0,0,0.7)",
-                        position: "fixed",
-                        top: 0,
-                        left: 0,
-                        width: "100vw",
-                        height: "100vh",
-                        overflowY: "auto",
-                        zIndex: 1050,
-                    }}
-                    tabIndex={-1}
-                    role="dialog"
-                    aria-modal="true"
-                >
+                {modalOpen && (
                     <div
-                        className="modal-dialog modal-dialog-scrollable modal-lg"
-                        role="document"
+                        className="modal fade show"
+                        style={{
+                            display: "block",
+                            backgroundColor: "rgba(0,0,0,0.7)",
+                            position: "fixed",
+                            top: 0,
+                            left: 0,
+                            width: "100vw",
+                            height: "100vh",
+                            overflowY: "auto",
+                            zIndex: 1050,
+                        }}
+                        tabIndex={-1}
+                        role="dialog"
+                        aria-modal="true"
                     >
-                        <div className="modal-content" style={{ backgroundColor: "#222" }}>
-                            <div className="modal-header">
-                                <h5 className="modal-title text-warning text-capitalize">
-                                    Movimientos de {modalPokemonName || "Pokémon"}
-                                </h5>
-                                <button
-                                    type="button"
-                                    className="btn-close btn-close-white"
-                                    onClick={closeModal}
-                                    aria-label="Cerrar"
-                                ></button>
-                            </div>
-                            <div className="modal-body text-light">
-                                {movesLoading ? (
-                                    <p>Cargando movimientos...</p>
-                                ) : moves.length === 0 ? (
-                                    <p>No se encontraron movimientos.</p>
-                                ) : (
-                                    <ul
-                                        style={{
-                                            maxHeight: "60vh",
-                                            overflowY: "auto",
-                                            paddingLeft: 0,
-                                            listStyle: "none",
-                                        }}
-                                    >
-                                        {moves.map(({ name, effect }) => (
-                                            <li
-                                                key={name}
-                                                style={{
-                                                    marginBottom: "10px",
-                                                    borderBottom: "1px solid #444",
-                                                    paddingBottom: "5px",
-                                                }}
-                                            >
-                                                <strong className="text-capitalize">{name.replace(/-/g, " ")}</strong>
-                                                <p>{effect}</p>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
-                            <div className="modal-footer">
-                                <button className="btn btn-secondary" onClick={closeModal}>
-                                    Cerrar
-                                </button>
+                        <div
+                            className="modal-dialog modal-dialog-scrollable modal-lg"
+                            role="document"
+                        >
+                            <div className="modal-content" style={{ backgroundColor: "#222" }}>
+                                <div className="modal-header">
+                                    <h5 className="modal-title text-warning text-capitalize">
+                                        Movimientos de {modalPokemonName || "Pokémon"}
+                                    </h5>
+                                    <button
+                                        type="button"
+                                        className="btn-close btn-close-white"
+                                        onClick={closeModal}
+                                        aria-label="Cerrar"
+                                    ></button>
+                                </div>
+                                <div className="modal-body text-light">
+                                    {movesLoading ? (
+                                        <p>Cargando movimientos...</p>
+                                    ) : moves.length === 0 ? (
+                                        <p>No se encontraron movimientos.</p>
+                                    ) : (
+                                        <ul
+                                            style={{
+                                                maxHeight: "60vh",
+                                                overflowY: "auto",
+                                                paddingLeft: 0,
+                                                listStyle: "none",
+                                            }}
+                                        >
+                                            {moves.map(({ name, effect }) => (
+                                                <li
+                                                    key={name}
+                                                    style={{
+                                                        marginBottom: "10px",
+                                                        borderBottom: "1px solid #444",
+                                                        paddingBottom: "5px",
+                                                    }}
+                                                >
+                                                    <strong className="text-capitalize">{name.replace(/-/g, " ")}</strong>
+                                                    <p>{effect}</p>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                                <div className="modal-footer">
+                                    <button className="btn btn-secondary" onClick={closeModal}>
+                                        Cerrar
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
+        </>
     );
 }
 

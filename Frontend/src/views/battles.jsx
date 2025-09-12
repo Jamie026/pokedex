@@ -4,7 +4,6 @@ import axios from "../utils/axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../components/Navbar";
-import { BlueButton, GreeButton } from "../components/Buttons";
 import { io } from "socket.io-client";
 
 function Battles() {
@@ -109,7 +108,7 @@ function Battles() {
                     >
                         <div className="modal-content" style={{ backgroundColor: "#222" }}>
                             <div className="modal-header">
-                                <h5 className="modal-title text-warning text-capitalize">
+                                <h5 className="modal-title text-capitalize">
                                     Modo espera
                                 </h5>
                                 <button
@@ -119,8 +118,8 @@ function Battles() {
                                     aria-label="Cerrar"
                                 ></button>
                             </div>
-                            <div className="modal-body text-light d-flex flex-column justify-content-center align-items-center">
-                                <div className="spinner-border text-warning" style={{ width: "4rem", height: "4rem" }} role="status">
+                            <div className="modal-body d-flex flex-column justify-content-center align-items-center">
+                                <div className="spinner-border" style={{ width: "4rem", height: "4rem" }} role="status">
                                     <span className="visually-hidden">Cargando...</span>
                                 </div>
                                 <p>Esperando a un oponente...</p>
@@ -134,20 +133,20 @@ function Battles() {
             )}
 
             <div className="container py-4 mt-5">
-                <h1 className="text-center my-4 fw-bold text-warning">Salas de Batalla</h1>
+                <h1 className="text-center my-4 fw-bold">Salas de Batalla</h1>
 
                 <div className="text-center mb-5">
-                    <GreeButton onClick={handleCreateBattle}>
-                        ⚔️ Crear Sala de Batalla
-                    </GreeButton>
+                    <button className="btn btn-primary" onClick={handleCreateBattle}>
+                        Crear Sala de Batalla
+                    </button>
                 </div>
 
-                <h2 className="mb-3 text-warning">Salas en Espera</h2>
+                <h2 className="mb-3">Salas en Espera</h2>
 
                 {loading ? (
-                    <p className="text-center text-light">Cargando salas...</p>
+                    <p className="text-center">Cargando salas...</p>
                 ) : waitingBattles.length === 0 ? (
-                    <div className="text-center p-4 border border-secondary rounded shadow-sm text-light">
+                    <div className="text-center p-4 border border-secondary rounded shadow-sm">
                         <p>No hay salas disponibles en este momento.</p>
                     </div>
                 ) : (
@@ -156,7 +155,7 @@ function Battles() {
                             <div className="room-info">
                                 <span className="room-id">SALA #{battle.id}</span>
                                 <span className="creator-info">Creador: {battle.player1Username}</span>
-                                <BlueButton onClick={() => handleJoinBattle(battle.id)}>Unirse</BlueButton>
+                                <PrimaryButton onClick={() => handleJoinBattle(battle.id)}>Unirse</PrimaryButton>
                             </div>
                         </div>
                     ))

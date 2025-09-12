@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import "../assets/css/navbar.css"; 
+import "../assets/css/navbar.css";
 
 export default function Navbar() {
     const { logout } = useAuth();
@@ -51,12 +51,11 @@ export default function Navbar() {
                             <Link className="nav-link nav-link-glow" to="/profile">Mi perfil</Link>
                         </li>
                     </ul>
-                    <button
-                        className="btn btn-logout fw-bold rounded-pill"
+                    <button className="btn btn-warning"
                         onClick={handleLogout}
                     >
                         Cerrar Sesión
-                    </button>
+                    </button >
                 </div>
             </div>
         </nav>

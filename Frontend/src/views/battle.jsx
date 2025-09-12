@@ -6,48 +6,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { io } from "socket.io-client";
 
-const PokeballIcon = ({ isFainted }) => (
-    <div className={"team-preview-pokeball " + (isFainted ? "fainted" : "")}></div>
-);
-
-const PokemonDisplay = ({ pokemon, isPlayer }) => {
-    const healthPercentage = (pokemon.currentHp / pokemon.maxHp) * 100;
-    return (
-        <div className={"pokemon-display " + (isPlayer ? "player" : "opponent")}>
-            <div className="pokemon-info-card">
-                <h5 className="text-capitalize">{pokemon.name}</h5>
-                <div className="health-bar-container">
-                    <div className="health-bar" style={{ width: healthPercentage + "%" }}></div>
-                </div>
-                {isPlayer && <span className="hp-text">{pokemon.currentHp} / {pokemon.maxHp}</span>}
-            </div>
-            <img
-                src={isPlayer ? pokemon.sprites.back_default : pokemon.sprites.front_default}
-                alt={pokemon.name}
-                className="pokemon-sprite"
-            />
-        </div>
-    );
-};
-
-const ActionPanel = ({ activePokemon, onAttack, onSwitchClick, isMyTurn }) => {
-    const moves = useMemo(() => activePokemon?.moves.slice(0, 4) || [], [activePokemon]);
-    return (
-        <div className="action-panel">
-            <div className="moves-grid">
-                {moves.map(({ move }) => (
-                    <button key={move.name} onClick={() => onAttack(move)} className="btn btn-danger m-1 text-capitalize" disabled={!isMyTurn}>
-                        {move.name.replace("-", " ")}
-                    </button>
-                ))}
-            </div>
-            <button onClick={onSwitchClick} className="btn btn-info switch-btn" disabled={!isMyTurn}>
-                🔄 Cambiar
-            </button>
-        </div>
-    );
-};
-
 function Battle() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -67,6 +25,11 @@ function Battle() {
     const [socketId, setSocketId] = useState(null);
     const [isMyTurn, setIsMyTurn] = useState(false);
 
+    const moves = useMemo(() => {
+        if (!playerActivePokemon) return [];
+        return playerActivePokemon.moves.slice(0, 4);
+    }, [playerActivePokemon]);
+
     const fetchPokemonDetails = async (pokemonId) => {
         const res = await fetch("https://pokeapi.co/api/v2/pokemon/" + pokemonId);
         if (!res.ok) throw new Error("No se pudo encontrar el Pokémon con ID: " + pokemonId);
@@ -78,24 +41,20 @@ function Battle() {
     useEffect(() => {
         const newSocket = io("http://localhost:3000");
         setSocket(newSocket);
-
         return () => newSocket.disconnect();
     }, []);
 
     useEffect(() => {
         if (!socket) return;
 
-        socket.on("connect", () => {
-            socket.emit("joinBattleRoom", id);
-        });
+        socket.on("connect", () => socket.emit("joinBattleRoom", id));
 
         socket.on("battleReady", async ({ player1, player2, currentUserUsername, initialTurn, myId }) => {
             setSocketId(myId);
             setIsMyTurn(myId === initialTurn);
 
-            const isPlayer1 = player1.username === currentUserUsername;
-            const myData = isPlayer1 ? player1 : player2;
-            const opponentData = isPlayer1 ? player2 : player1;
+            const myData = player1.username === currentUserUsername ? player1 : player2;
+            const opponentData = player1.username === currentUserUsername ? player2 : player1;
 
             setOpponentInfo(prev => ({ ...prev, username: opponentData.username }));
 
@@ -104,17 +63,11 @@ function Battle() {
                     fetchPokemonDetails(myData.activePokemonId),
                     fetchPokemonDetails(opponentData.activePokemonId)
                 ]);
-
                 setPlayerActivePokemon(myPokemonData);
                 setOpponentActivePokemon(opponentPokemonData);
                 setBattlePhase("active");
                 setBattleLog(["La batalla comienza."]);
-
-                if (myId === initialTurn) {
-                    setBattleLog(prev => ["¡Es tu turno!", ...prev]);
-                } else {
-                    setBattleLog(prev => ["Esperando a " + opponentData.username + "...", ...prev]);
-                }
+                setBattleLog(prev => [(myId === initialTurn ? "¡Es tu turno!" : "Esperando a " + opponentData.username + "..."), ...prev]);
             } catch (err) {
                 toast.error("Error al cargar los Pokémon iniciales.");
             }
@@ -123,20 +76,15 @@ function Battle() {
         socket.on("turnResult", async (result) => {
             setBattleLog(prev => [result.logMessage, ...prev]);
             if (result.type === "attack") {
-                if (result.target === currentUser) {
-                    setPlayerActivePokemon(p => ({ ...p, currentHp: Math.max(0, p.currentHp - result.damage) }));
-                } else {
-                    setOpponentActivePokemon(p => ({ ...p, currentHp: Math.max(0, p.currentHp - result.damage) }));
-                }
-            } else if (result.type === "switch") {
-                if (result.playerWhoSwitched !== currentUser) {
-                    try {
-                        const opponentPokemonData = await fetchPokemonDetails(result.newPokemonId);
-                        setOpponentActivePokemon(opponentPokemonData);
-                        toast.info("Tu oponente ha cambiado a " + opponentPokemonData.name + ".");
-                    } catch (err) {
-                        toast.error("Error al cargar el Pokémon del oponente.");
-                    }
+                const targetStateUpdater = result.target === currentUser ? setPlayerActivePokemon : setOpponentActivePokemon;
+                targetStateUpdater(p => ({ ...p, currentHp: Math.max(0, p.currentHp - result.damage) }));
+            } else if (result.type === "switch" && result.playerWhoSwitched !== currentUser) {
+                try {
+                    const opponentPokemonData = await fetchPokemonDetails(result.newPokemonId);
+                    setOpponentActivePokemon(opponentPokemonData);
+                    toast.info("Tu oponente ha cambiado a " + opponentPokemonData.name + ".");
+                } catch (err) {
+                    toast.error("Error al cargar el Pokémon del oponente.");
                 }
             }
         });
@@ -144,12 +92,8 @@ function Battle() {
         socket.on("newTurn", ({ nextTurn }) => {
             const myTurn = nextTurn === socketId;
             setIsMyTurn(myTurn);
-            if (myTurn) {
-                setBattleLog(prev => ["¡Es tu turno!", ...prev]);
-                toast.success("¡Es tu turno!");
-            } else {
-                setBattleLog(prev => ["Esperando al oponente...", ...prev]);
-            }
+            setBattleLog(prev => [(myTurn ? "¡Es tu turno!" : "Esperando al oponente..."), ...prev]);
+            if (myTurn) toast.success("¡Es tu turno!");
         });
 
         return () => {
@@ -166,8 +110,7 @@ function Battle() {
                 const res = await axios.get("/battles/" + id + "/teams", { headers: { Authorization: "Bearer " + token } });
                 const { battle: battleData, currentUserUsername } = res.data;
                 setCurrentUser(currentUserUsername);
-                const isPlayer1 = battleData.player1.username === currentUserUsername;
-                const playerInfo = isPlayer1 ? battleData.player1 : battleData.player2;
+                const playerInfo = battleData.player1.username === currentUserUsername ? battleData.player1 : battleData.player2;
                 const playerPokemons = await Promise.all(playerInfo.pokemons.map(p => fetchPokemonDetails(p)));
                 setPlayerTeam(playerPokemons);
                 setBattlePhase("initial-select");
@@ -182,11 +125,7 @@ function Battle() {
 
     const handleInitialSelect = (pokemonId) => {
         if (socket && currentUser) {
-            socket.emit("playerReady", {
-                battleId: id,
-                initialPokemonId: pokemonId,
-                username: currentUser
-            });
+            socket.emit("playerReady", { battleId: id, initialPokemonId: pokemonId, username: currentUser });
             setBattlePhase("waiting-opponent");
         }
     };
@@ -197,8 +136,7 @@ function Battle() {
             return;
         }
         if (socket) {
-            const action = { type: "switch", newPokemonId: pokemon.id };
-            socket.emit("playerAction", { battleId: id, action });
+            socket.emit("playerAction", { battleId: id, action: { type: "switch", newPokemonId: pokemon.id } });
             setPlayerActivePokemon(pokemon);
             setShowSwitchSelection(false);
             setBattleLog(prev => ["Adelante, " + pokemon.name, ...prev]);
@@ -212,8 +150,7 @@ function Battle() {
             return;
         }
         if (socket) {
-            const action = { type: "attack", moveName: move.name };
-            socket.emit("playerAction", { battleId: id, action });
+            socket.emit("playerAction", { battleId: id, action: { type: "attack", moveName: move.name } });
             setBattleLog(prev => [playerActivePokemon.name + " usó " + move.name.replace("-", " "), ...prev]);
             setIsMyTurn(false);
         }
@@ -255,27 +192,66 @@ function Battle() {
                 <div className="battle-arena">
                     <div className="battle-side opponent-side">
                         <div className="team-preview opponent-team">
-                            {[...Array(opponentInfo.pokemonsLeft)].map((_, i) => <PokeballIcon key={i} isFainted={i >= (opponentInfo.pokemonsLeft - opponentInfo.faintedCount)} />)}
+                            {[...Array(opponentInfo.pokemonsLeft)].map((_, i) => (
+                                <div key={i} className={"team-preview-pokeball " + (i >= (opponentInfo.pokemonsLeft - opponentInfo.faintedCount) ? "fainted" : "")}></div>
+                            ))}
                         </div>
-                        {opponentActivePokemon && <PokemonDisplay pokemon={opponentActivePokemon} isPlayer={false} />}
+                        {opponentActivePokemon && (() => {
+                            const healthPercentage = (opponentActivePokemon.currentHp / opponentActivePokemon.maxHp) * 100;
+                            return (
+                                <div className="pokemon-display opponent">
+                                    <div className="pokemon-info-card">
+                                        <h5 className="text-capitalize">{opponentActivePokemon.name}</h5>
+                                        <div className="health-bar-container">
+                                            <div className="health-bar" style={{ width: healthPercentage + "%" }}></div>
+                                        </div>
+                                    </div>
+                                    <img src={opponentActivePokemon.sprites.front_default} alt={opponentActivePokemon.name} className="pokemon-sprite" />
+                                </div>
+                            );
+                        })()}
                     </div>
+
                     <div className="battle-side player-side">
-                        {playerActivePokemon && <PokemonDisplay pokemon={playerActivePokemon} isPlayer={true} />}
+                        {playerActivePokemon && (() => {
+                            const healthPercentage = (playerActivePokemon.currentHp / playerActivePokemon.maxHp) * 100;
+                            return (
+                                <div className="pokemon-display player">
+                                    <div className="pokemon-info-card">
+                                        <h5 className="text-capitalize">{playerActivePokemon.name}</h5>
+                                        <div className="health-bar-container">
+                                            <div className="health-bar" style={{ width: healthPercentage + "%" }}></div>
+                                        </div>
+                                        <span className="hp-text">{playerActivePokemon.currentHp} / {playerActivePokemon.maxHp}</span>
+                                    </div>
+                                    <img src={playerActivePokemon.sprites.back_default} alt={playerActivePokemon.name} className="pokemon-sprite" />
+                                </div>
+                            );
+                        })()}
                         <div className="team-preview player-team">
-                            {playerTeam.map(p => <PokeballIcon key={p.id} isFainted={p.currentHp <= 0} />)}
+                            {playerTeam.map(p => (
+                                <div key={p.id} className={"team-preview-pokeball " + (p.currentHp <= 0 ? "fainted" : "")}></div>
+                            ))}
                         </div>
                     </div>
                 </div>
+
                 <div className="battle-controls-container">
                     <div className="battle-log-box">
                         {battleLog.map((msg, index) => <p key={index} className="log-message">{msg}</p>)}
                     </div>
-                    <ActionPanel
-                        activePokemon={playerActivePokemon}
-                        onAttack={handleAttack}
-                        onSwitchClick={() => setShowSwitchSelection(true)}
-                        isMyTurn={isMyTurn}
-                    />
+                    <div className="action-panel">
+                        <div className="moves-grid">
+                            {moves.map(({ move }) => (
+                                <button key={move.name} onClick={() => handleAttack(move)} className="btn btn-danger m-1 text-capitalize" disabled={!isMyTurn}>
+                                    {move.name.replace("-", " ")}
+                                </button>
+                            ))}
+                        </div>
+                        <button onClick={() => setShowSwitchSelection(true)} className="btn btn-info switch-btn" disabled={!isMyTurn}>
+                            🔄 Cambiar
+                        </button>
+                    </div>
                 </div>
             </div>
 

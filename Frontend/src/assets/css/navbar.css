@@ -1,20 +1,31 @@
-.pokedex-navbar {
-    background: linear-gradient(90deg, rgba(17, 17, 17, 0.9), rgba(255, 28, 28, 0.9));
-    backdrop-filter: blur(12px);
-    border-bottom: 3px solid #ffcc00;
-    animation: navbarGlow 4s ease-in-out infinite;
-    z-index: 10;
+.navbar {
+    background: linear-gradient(90deg, #6A00FF, #FF6B00);
+    color: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
-@keyframes navbarGlow {
+.nav-link-glow {
+    color: #fff !important;
+    font-weight: 600;
+    margin: 0 15px;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.nav-link-glow:hover {
+    color: #FFD93D !important;
+    text-shadow: 0 0 12px #FFD93D;
+}
+
+@keyframes elegantGlow {
 
     0%,
     100% {
-        box-shadow: 0 0 8px rgba(255, 204, 0, 0.6);
+        box-shadow: 0 0 10px rgba(255, 204, 0, 0.4);
     }
 
     50% {
-        box-shadow: 0 0 20px rgba(255, 204, 0, 0.9);
+        box-shadow: 0 0 25px rgba(255, 204, 0, 0.8);
     }
 }
 
@@ -23,31 +34,4 @@
     height: 32px;
     margin-right: 10px;
     filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
-}
-
-.nav-link-glow {
-    color: white !important;
-    font-weight: 600;
-    position: relative;
-    margin: 10px;
-    transition: color 0.3s ease, text-shadow 0.3s ease;
-}
-
-.nav-link-glow:hover {
-    color: #ffcc00 !important;
-    text-shadow: 0 0 8px #ffcc00, 0 0 15px rgba(255, 204, 0, 0.8);
-}
-
-.btn-logout {
-    background: linear-gradient(135deg, #ffcc00, #ff9900);
-    border: none;
-    color: black;
-    padding: 0.4rem 1rem;
-    box-shadow: 0 0 8px rgba(255, 204, 0, 0.6);
-    transition: transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-.btn-logout:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(255, 204, 0, 1);
 }
